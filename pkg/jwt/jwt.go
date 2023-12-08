@@ -13,8 +13,8 @@ import (
 )
 
 const (
-	privateKeyPath = "./keys/app.rsa"
-	publicKeyPath  = "./keys/app.rsa.pub"
+	privateKeyPath = "./pkg/keys/private.pem"
+	publicKeyPath  = "./pkg/keys/public.pem"
 )
 
 var (
@@ -283,4 +283,16 @@ func updateRefreshTokenCsrf(oldRefreshTokenString string, newCsrfString string) 
 
 	newRefreshTokenString, err = refreshJwt.SignedString(signKey)
 	return
+}
+
+func GrabUUID(authToken string) (string, error) {
+	token, _ := jwt.ParseWithClaims(authToken, &models.TokenClaims{}, func(token *jwt.Token) (any, error) {
+		return "", errors.New("Error fetching claims")
+	})
+	authTokenClaims, ok := token.Claims.(*models.TokenClaims)
+	if !ok {
+		return "", errors.New("Error fetching claims")
+	}
+
+	return authTokenClaims.StandardClaims.Subject, nil
 }
